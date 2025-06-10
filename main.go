@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/marco6/dqlite-custom-functions-sample/extensions"
 	"github.com/marco6/dqlite-custom-functions-sample/shell"
 	"github.com/peterh/liner"
 	"github.com/spf13/cobra"
@@ -19,12 +20,20 @@ func main() {
 	var cluster []string
 	var dataDir string
 	var timeoutMsec uint
+	var enableNative bool
+	var enableGolang bool
 
 	cmd := &cobra.Command{
 		Use:   "dqlite-custom-functions-sample [options] <database>",
 		Short: "Standard dqlite shell with custom functions",
 		Args:  cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if enableNative {
+				err := extensions.RegisterNativeExtension()
+				if err != nil {
+					return err
+				}
+			}
 			app, err := app.New(dataDir,
 				app.WithAddress(address),
 				app.WithCluster(cluster),
@@ -75,6 +84,8 @@ func main() {
 	flags.StringSliceVarP(&cluster, "join", "j", nil, "comma-separated list of db servers")
 	flags.StringVarP(&dataDir, "data-dir", "d", "data", "data directory")
 	flags.UintVar(&timeoutMsec, "timeout", 2000, "timeout of each request (msec)")
+	flags.BoolVar(&enableNative, "native", false, "enables native extensions")
+	flags.BoolVar(&enableGolang, "go", false, "enables golang extensions")
 
 	if err := cmd.Execute(); err != nil {
 		os.Exit(1)
