@@ -20,20 +20,28 @@ func main() {
 	var cluster []string
 	var dataDir string
 	var timeoutMsec uint
-	var enableNative bool
-	var enableGolang bool
+	var enableGcd bool
+	var enableNotify bool
 
 	cmd := &cobra.Command{
 		Use:   "dqlite-custom-functions-sample [options] <database>",
 		Short: "Standard dqlite shell with custom functions",
 		Args:  cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if enableNative {
-				err := extensions.RegisterNativeExtension()
+			if enableGcd {
+				err := extensions.RegisterGcdExtension()
 				if err != nil {
 					return err
 				}
 			}
+
+			if enableNotify {
+				err := extensions.RegisterNotifyExtension()
+				if err != nil {
+					return err
+				}
+			}
+
 			app, err := app.New(dataDir,
 				app.WithAddress(address),
 				app.WithCluster(cluster),
@@ -84,8 +92,8 @@ func main() {
 	flags.StringSliceVarP(&cluster, "join", "j", nil, "comma-separated list of db servers")
 	flags.StringVarP(&dataDir, "data-dir", "d", "data", "data directory")
 	flags.UintVar(&timeoutMsec, "timeout", 2000, "timeout of each request (msec)")
-	flags.BoolVar(&enableNative, "native", false, "enables native extensions")
-	flags.BoolVar(&enableGolang, "go", false, "enables golang extensions")
+	flags.BoolVar(&enableGcd, "gcd", false, "enables GCD extension")
+	flags.BoolVar(&enableNotify, "notify", false, "enables notify extension")
 
 	if err := cmd.Execute(); err != nil {
 		os.Exit(1)
